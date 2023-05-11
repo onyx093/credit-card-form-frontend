@@ -11,6 +11,6 @@ This repository contains the steps to setup my solutions for the tasks given, by
 
 ## Laravel Backend Setup
 
-* Navigate to the Laravel backend repository via this [link](https://code.visualstudio.com/), to clone it.
+* Navigate to the Laravel backend repository via this [link](https://github.com/onyx093/credit-card-validator-api), to clone it.
 * Install all the needed dependencies with `composer install`.
 * Run `php artisan serve` to start up the backend API server and then go back to the vue frontend to test it.
