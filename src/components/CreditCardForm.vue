@@ -9,20 +9,23 @@ const creditCardNumber = ref('');
 const expiryDate = ref('');
 const cvv = ref('');
 
+const cardNumberStatus = ref(false);
+const expiryDateStatus = ref(false);
+const cvvStatus = ref(false);
+
+const isDirty = ref(false);
+
 const validationSuccess = ref(false);
 
 watch(creditCardNumber, (newValue) => {
   const cleanNumber = newValue.replace(/[-\s]/g, '');
 
-  // Insert a dash every 4 characters
   let formattedNumber = '';
   for (let i = 0; i < cleanNumber.length; i += 4) {
     formattedNumber += cleanNumber.slice(i, i + 4) + '-';
   }
 
-  // Remove the trailing dash if it exists
   formattedNumber = formattedNumber.replace(/-$/, '');
-
   creditCardNumber.value = formattedNumber;
 });
 
@@ -36,6 +39,7 @@ watch(expiryDate, (newValue) => {
 
 const submitForm = async () => {
   try {
+    isDirty.value = true;
     const response = await fetch('http://localhost:8000/api/validate-credit-card', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -47,11 +51,31 @@ const submitForm = async () => {
     });
     const data = await response.json();
     if(data.validation_success){
-      validationSuccess.value = true;
+      cardNumberStatus.value = true;
+      expiryDateStatus.value = true;
+      cvvStatus.value = true;
+      setTimeout(() => {
+        validationSuccess.value = true;
+      }, 3000);
+    }else{
+      if(data.errors.creditCardNumber){
+        cardNumberStatus.value = false;
+      }else{
+        cardNumberStatus.value = true;
+      }
+      if(data.errors.expiryDate){
+        expiryDateStatus.value = false;
+      }else{
+        expiryDateStatus.value = true;
+      }
+      if(data.errors.cvv){
+        cvvStatus.value = false;
+      }else{
+        cvvStatus.value = true;
+      }
     }
-    console.log(data);
   } catch (error) {
-    console.error(error);
+    console.log(error);
   }
 };
 </script>
@@ -68,6 +92,7 @@ const submitForm = async () => {
         </label>
         <input
           class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          :class="{'shadow-green-400': isDirty && cardNumberStatus, 'shadow-red-400': isDirty && !cardNumberStatus}"
           id="creditCardNumber"
           type="text"
           placeholder="XXXX-XXXX-XXXX-XXXX"
@@ -81,6 +106,7 @@ const submitForm = async () => {
           </label>
           <input
             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            :class="{'shadow-green-400': isDirty && expiryDateStatus, 'shadow-red-400': isDirty && !expiryDateStatus}"
             id="expiryDate"
             type="text"
             placeholder="MM/YY"
@@ -93,6 +119,7 @@ const submitForm = async () => {
           </label>
           <input
             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            :class="{'shadow-green-400': isDirty && cvvStatus, 'shadow-red-400': isDirty && !cvvStatus}"
             id="cvv"
             type="text"
             placeholder="XXX"
